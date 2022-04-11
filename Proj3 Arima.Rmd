@@ -1,0 +1,41 @@
+---
+title: "Proj3 Arima"
+author: "Tianyue Zhou"
+date: "4/11/2022"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(forecast)
+fit = auto.arima(sqrt(cases[1:97]))
+summary(fit)
+checkresiduals(fit)
+autoplot(forecast(fit))
+predictions = as.numeric(predict(fit, n.ahead = 42)$pred)
+predictions^2
+```
+
+
+
+```{r}
+pred_case_arima <- predictions^2
+date_new <- date[-1]
+train_date <- date_new[1:nrow(train)]
+test_date <- date_new[(nrow(train)+1):length(date_new)]
+
+df_out <- data.frame(
+  date = date_new,
+  true_cases = cases[-1],
+  pred_cases = c(cases[2:(nrow(train)+1)], pred_case_arima)
+)
+df_out$date <- as.Date(df_out$date)
+pred_arima_xts <- xts(x = df_out[,-1], order.by = df_out$date)
+dygraph(pred_arima_xts)
+```
+
+
+
